@@ -58,3 +58,20 @@ spark.table("ctl_watermark").filter(F.col("EntityName") == entity).show(truncate
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# CELL ********************
+
+from pyspark.sql import functions as F
+
+(spark.table("ctl_watermark")
+    .filter(F.col("EntityName") == "OrderLine")
+    .select("LoadStatus", "RowsExtracted", "LastCommittedWatermark", "ActiveBatchID", "ActiveHighWatermark", "LastError")
+    .show(truncate=False))
+    
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
