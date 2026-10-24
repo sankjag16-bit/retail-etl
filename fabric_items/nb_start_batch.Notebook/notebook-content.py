@@ -51,6 +51,9 @@ else:
     high_wm = requested_high_wm
     batch_id = entity.lower() + "_" + datetime.strptime(high_wm, fmt).strftime("%Y%m%d%H%M%S")
 
+if not resume and high_wm <= low_wm:
+    raise Exception(f"Nothing to load: high watermark {high_wm} is not after committed {low_wm}")
+
 print(resume, low_wm, high_wm, batch_id)
 
 # METADATA ********************
