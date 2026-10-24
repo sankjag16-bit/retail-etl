@@ -73,3 +73,14 @@ spark.table("ctl_watermark").show(truncate=False)
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
+
+# CELL ********************
+
+spark.sql("DROP TABLE IF EXISTS bronze_order_line")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
