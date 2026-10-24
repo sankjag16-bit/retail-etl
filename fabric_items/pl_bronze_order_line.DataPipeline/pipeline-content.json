@@ -100,7 +100,8 @@
               },
               "type": "string"
             }
-          }
+          },
+          "sessionTag": "retail_etl"
         },
         "policy": {
           "timeout": "0.12:00:00",
@@ -115,9 +116,13 @@
       {
         "type": "TridentNotebook",
         "typeProperties": {
-          "notebookId": "692fb8b0-3cd4-acd2-4e2a-09fa03d2c624",
+          "notebookId": "cf329912-f4d9-887c-49f2-11e41e74f6b1",
           "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
+            "batch_id": {
+              "value": "@json(activity('nb_start_batch').output.result.exitValue).batch_id",
+              "type": "string"
+            },
             "entity": {
               "value": "OrderLine",
               "type": "string"
@@ -126,21 +131,12 @@
               "value": "bronze_order_line",
               "type": "string"
             },
-            "batch_id": {
-              "value": {
-                "value": "@json(activity('nb_start_batch').output.result.exitValue).batch_id",
-                "type": "Expression"
-              },
-              "type": "string"
-            },
             "rows_extracted": {
-              "value": {
-                "value": "@activity('copy_order_line').output.rowsCopied",
-                "type": "Expression"
-              },
+              "value": "@activity('copy_order_line').output.rowsCopied",
               "type": "int"
             }
-          }
+          },
+          "sessionTag": "retail_etl"
         },
         "policy": {
           "timeout": "0.12:00:00",
@@ -149,7 +145,7 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "nb_complete_bronze",
+        "name": "nb_silver_order_line",
         "dependsOn": [
           {
             "activity": "copy_order_line",
@@ -161,17 +157,9 @@
       }
     ],
     "parameters": {
-      "low_wm": {
-        "type": "string",
-        "defaultValue": "1900-01-01 00:00:00"
-      },
       "high_wm": {
         "type": "string",
         "defaultValue": "2026-10-05 23:59:59"
-      },
-      "batch_id": {
-        "type": "string",
-        "defaultValue": "orderline_run1"
       }
     }
   }
