@@ -1,0 +1,124 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource",
+            "sqlReaderQuery": {
+              "value": "SELECT *, '@{json(activity('nb_start_batch').output.result.exitValue).batch_id}' AS _batch_id, SYSUTCDATETIME() AS _ingested_at\nFROM src.Product\nWHERE ModifiedAt > '@{json(activity('nb_start_batch').output.result.exitValue).low_wm}'\n  AND ModifiedAt <= '@{json(activity('nb_start_batch').output.result.exitValue).high_wm}'",
+              "type": "Expression"
+            },
+            "partitionOption": "None",
+            "queryTimeout": "02:00:00",
+            "datasetSettings": {
+              "type": "SqlServerTable",
+              "typeProperties": {
+                "database": "retail_source"
+              },
+              "schema": [],
+              "externalReferences": {
+                "connection": "b1cc98e2-d796-4646-bb6b-6711f5abcdc4"
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "LakehouseTableSink",
+            "tableActionOption": "Append",
+            "applyVOrder": false,
+            "enableTimestampNtz": false,
+            "partitionOption": "None",
+            "datasetSettings": {
+              "type": "LakehouseTable",
+              "typeProperties": {
+                "schema": "dbo",
+                "table": "bronze_product"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "lh_retail",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "a8ea3927-3594-a636-4ec2-b9b43d2bcff0",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Tables"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "copy_order_line",
+        "dependsOn": [
+          {
+            "activity": "nb_start_batch",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "c4188ded-2be7-a030-4ebe-e333152aeab1",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "entity": {
+              "value": "Product",
+              "type": "string"
+            },
+            "bronze_table": {
+              "value": "bronze_product",
+              "type": "string"
+            },
+            "requested_high_wm": {
+              "value": {
+                "value": "@pipeline().parameters.high_wm",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          },
+          "sessionTag": "retail_etl"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "nb_start_batch",
+        "dependsOn": []
+      }
+    ],
+    "parameters": {
+      "high_wm": {
+        "type": "string",
+        "defaultValue": "2026-10-05 23:59:59"
+      }
+    }
+  }
+}
